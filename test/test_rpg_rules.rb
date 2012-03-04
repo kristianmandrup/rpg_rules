@@ -197,8 +197,6 @@ class GameRulebook < Ruleby::Rulebook
         attack.reset!
 
         retract attack
-
-        modify attacker
         modify defender
     end
 
