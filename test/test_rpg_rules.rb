@@ -31,6 +31,14 @@ class Creature
     @hp = hp
     @attack = attack
     @defend = 10
+    @level = 0
+    @xp = 0
+    @xp_value = 12
+  end
+
+  def rise_lv!
+    @level += 1
+    puts "#{name} rises a level :)"    
   end
 
   def hurt dmg
@@ -50,6 +58,11 @@ class Creature
     @defend_roll
   end
   
+  def experience xp_value
+    @xp += xp_value
+    puts "#{name} scores #{xp_value} XP"    
+  end
+  
   def act action, object = nil
     @action = action
     return if !object
@@ -61,6 +74,9 @@ class Creature
   attr :attack
   attr :defend
   attr :action
+  attr :xp
+  attr :level
+  attr :xp_value
   
   attr_writer :action
 end
@@ -122,6 +138,16 @@ class Attacker
   attr :creature
 end
 
+class Death
+  def initialize(creature)
+    @creature = creature
+  end
+  
+  attr_writer :creature
+  
+  attr :creature
+end
+
 class Defender
   def initialize(creature)
     @creature = creature
@@ -146,6 +172,7 @@ class GameRulebook < Ruleby::Rulebook
         creature = v[:creature]
         puts "#{creature.name} dies!!"
         retract creature
+        assert Death.new creature
     end
 
     rule :Action_Attack,
@@ -175,10 +202,29 @@ class GameRulebook < Ruleby::Rulebook
         modify defender
     end
 
+    rule :Experience_from_kill,
+      [:exists, Death, :death, {m.creature => :dead}],
+      [Defender, :defender, m.creature == b(:dead)],
+      [Attacker, :attacker] do |v|
+        death = v[:death]
+        defender = v[:defender].creature
+        attacker = v[:attacker].creature
+        attacker.experience defender.xp_value
+        modify attacker
+        retract death 
+    end
+
+    rule :Rise_level,
+      [:is_a?, Creature, :creature, m.xp >= 10, m.level == 0] do |v|
+        creature = v[:creature]
+        creature.rise_lv!
+        modify creature
+    end
+
     rule :Attack_Miss,
-    [:exists, Attack, :attack],
-    [Defender, :defender, {m.defend_roll => :defence}],
-    [Attacker, :attacker, m.attack_roll <= b(:defence)] do |v|
+      [:exists, Attack, :attack],
+      [Defender, :defender, {m.defend_roll => :defence}],
+      [Attacker, :attacker, m.attack_roll <= b(:defence)] do |v|
         attack = v[:attack]
         attacker = v[:attacker].creature
         defender = v[:defender].creature
