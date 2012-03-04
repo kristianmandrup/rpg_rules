@@ -1,7 +1,7 @@
 source :rubygems
 
 group :test, :development do
-  gem "shoulda", ">= 0"
+  gem "rspec", ">= 0"
   gem "ruleby", ">= 0.9.b7"
 end  
 
