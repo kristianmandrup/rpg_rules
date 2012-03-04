@@ -1,6 +1,6 @@
 = rpg_rules
 
-Description goes here.
+Using the ruleby engine to implement a simple subset of RPG gaming rules.
 
 == Contributing to rpg_rules
  
